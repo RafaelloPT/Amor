@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz do Amor</title>
+    <style>
+        :root {
+            --primary: #ff8fa3;
+            --secondary: #ffb3c1;
+            --background: #fff5f7;
+            --text: #4a4a4a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 90%;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary);
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .question-container {
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .question {
+            font-size: 1.2em;
+            color: var(--text);
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option {
+            padding: 15px;
+            background: white;
+            border: 2px solid var(--secondary);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .option.selected {
+            background: var(--primary);
+            color: white;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: var(--primary);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            background: var(--secondary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .progress-dot.active {
+            background: var(--primary);
+        }
+
+        .result {
+            text-align: center;
+            display: none;
+        }
+
+        .result h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .hearts {
+            font-size: 2em;
+            margin: 20px 0;
+            color: var(--primary);
+        }
+
+        .proposal {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            border: 2px solid var(--primary);
+            border-radius: 15px;
+            animation: fadeIn 1s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .try-again-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: var(--primary);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                width: 95%;
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .question {
+                font-size: 1em;
+            }
+
+            .option {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Quiz do Amor ❤️</h1>
+            <p>Descubre quanto conheces me!</p>
+        </div>
+
+        <div class="question-container">
+            <div class="question"></div>
+            <div class="options"></div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn">Anterior</button>
+            <button class="nav-btn" id="nextBtn">Próxima</button>
+        </div>
+
+        <div class="progress-bar"></div>
+
+        <div class="result">
+            <div class="hearts">❤️</div>
+            <h2>Resultado Final</h2>
+            <p class="score"></p>
+            <div class="proposal">
+                <h3>Meu amor...</h3>
+                <p>És especial para mim. Queres namorar comigo?</p>
+                <div class="hearts">💝</div>
+            </div>
+            <button class="try-again-btn" onclick="resetQuiz()">Tentar Novamente</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Qual é a minha cor favorita?",
+                options: ["Azul", "Vermelho", "Verde", "Rosa"],
+                correct: 3
+            },
+            {
+                question: "Qual é minha comida favorita?",
+                options: ["Pizza", "Hambúrguer", "Cachorro Quente", "Sushi"],
+                correct: 2
+            },
+            {
+                question: "Qual é meu filme favorito?",
+                options: ["Velocidade Furiosa", "Piratas das Caraíbas", "Star Wars", "Senhor dos Anéis"],
+                correct: 0
+            },
+            {
+                question: "Qual é o meu bolo favorito?",
+                options: ["Xadrez", "Pirâmide", "Doce da avó", "Salame"],
+                correct: 1
+            },
+            {
+                question: "Qual o meu animal favorito?",
+                options: ["Gato", "Cão", "Pinguim", "Pássaro"],
+                correct: 2
+            },
+            {
+                question: "O que eu mais gosto de beber?",
+                options: ["Água", "Cerveja", "Ice Tea", "Coca-Cola"],
+                correct: 0
+            },
+            {
+                question: "Qual é o meu desporto favorito?",
+                options: ["Futebol", "Basketball", "Voleibol", "handball"],
+                correct: 1
+            },
+            {
+                question: "Qual o meu cantor favorito?",
+                options: ["Matheus Brasileiro", "Veigh", "Wiu", "Orochi"],
+                correct: 0
+            },
+            {
+                question: "Qual o meu hobby favorito?",
+                options: ["Jogar", "Basket", "Ouvir Musica", "Gym"],
+                correct: 3
+            },
+            {
+                question: "Qual o lugar que eu gostava de visitar?",
+                options: ["Paris", "Grécia", "Itália", "Tokyo"],
+                correct: 1
+            },
+            {
+                question: "Quantos filhos eu quero ter?",
+                options: ["0", "1", "2", "3 ou mais"],
+                correct: 2
+            },
+            {
+                question: "Qual é o meu número favorito?",
+                options: ["7", "14", "13", "6"],
+                correct: 2
+            },
+            {
+                question: "Qual é o apelido que mais gosto de te chamar?",
+                options: ["Pincesa", "Vida", "BB", "Mor"],
+                correct: 0
+            }
+            // Adicione mais perguntas aqui...
+        ];
+
+        let currentQuestion = 0;
+        let answers = new Array(questions.length).fill(null);
+
+        const questionElement = document.querySelector('.question');
+        const optionsElement = document.querySelector('.options');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressBar = document.querySelector('.progress-bar');
+        const resultDiv = document.querySelector('.result');
+        const scoreElement = document.querySelector('.score');
+        const proposalDiv = document.querySelector('.proposal');
+
+        function showQuestion(index) {
+            const question = questions[index];
+            questionElement.textContent = `${index + 1}. ${question.question}`;
+            
+            optionsElement.innerHTML = '';
+            question.options.forEach((option, i) => {
+                const button = document.createElement('button');
+                button.className = `option ${answers[index] === i ? 'selected' : ''}`;
+                button.textContent = option;
+                button.onclick = () => selectOption(i);
+                optionsElement.appendChild(button);
+            });
+
+            updateNavButtons();
+            updateProgressBar();
+        }
+
+        function selectOption(index) {
+            answers[currentQuestion] = index;
+            showQuestion(currentQuestion);
+        }
+
+        function updateNavButtons() {
+            prevBtn.disabled = currentQuestion === 0;
+            nextBtn.textContent = currentQuestion === questions.length - 1 ? 'Finalizar' : 'Próxima';
+        }
+
+        function updateProgressBar() {
+            progressBar.innerHTML = '';
+            questions.forEach((_, i) => {
+                const dot = document.createElement('div');
+                dot.className = `progress-dot ${i === currentQuestion ? 'active' : ''}`;
+                dot.onclick = () => goToQuestion(i);
+                progressBar.appendChild(dot);
+            });
+        }
+
+        function goToQuestion(index) {
+            currentQuestion = index;
+            showQuestion(currentQuestion);
+        }
+
+        function resetQuiz() {
+            currentQuestion = 0;
+            answers = new Array(questions.length).fill(null);
+            resultDiv.style.display = 'none';
+            document.querySelector('.question-container').style.display = 'block';
+            document.querySelector('.navigation').style.display = 'flex';
+            document.querySelector('.progress-bar').style.display = 'flex';
+            proposalDiv.style.display = 'none';
+            showQuestion(0);
+        }
+
+        prevBtn.onclick = () => {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion(currentQuestion);
+            }
+        };
+
+        nextBtn.onclick = () => {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+            } else {
+                showResult();
+            }
+        };
+
+        function showResult() {
+            const correctAnswers = answers.filter((answer, index) => answer === questions[index].correct).length;
+            const percentage = (correctAnswers / questions.length) * 100;
+
+            document.querySelector('.question-container').style.display = 'none';
+            document.querySelector('.navigation').style.display = 'none';
+            document.querySelector('.progress-bar').style.display = 'none';
+            resultDiv.style.display = 'block';
+
+            scoreElement.textContent = `Você acertou ${percentage.toFixed(1)}% das perguntas! ${getMessageBasedOnScore(percentage)}`;
+            
+            // Só mostra o pedido de namoro se acertar 100%
+            proposalDiv.style.display = percentage === 100 ? 'block' : 'none';
+        }
+
+        function getMessageBasedOnScore(score) {
+            if (score == 100) return "Amor foste feita para mim! 💖";
+            if (score >= 80) return "Conheces me tão bem! ❤️";
+            if (score >= 60) return "Ainda falta conhecer alguma coisa, mas estamos no bom caminho! 💕";
+            if (score >= 40) return "Ainda temos muito para nos conhecer! 💝";
+            return "Ainda nao estás pronta, vamos nos conhecer melhor";
+        }
+
+        // Iniciar o quiz
+        showQuestion(0);
+    </script>
+</body>
+</html>
